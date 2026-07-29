@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Member Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Include Html5-Qrcode scanner library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
@@ -36,7 +38,7 @@
             
             <!-- Side Panel (Left Column) -->
             <div class="space-y-6">
-                <!-- 1. Barcode & Attendance Calendar Box -->
+                <!-- 1. Barcode Scanner & Manual Gate Options -->
                 <div class="bg-white p-5 rounded-xl shadow-md">
                     <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">🎫 Gate & Attendance</h3>
                     <div class="space-y-3">
@@ -49,9 +51,23 @@
                                 <option>07:00 PM - 10:00 PM</option>
                             </select>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="handleGateScan('Check-In')" class="flex-1 bg-green-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-green-700">Check-In</button>
-                            <button onclick="handleGateScan('Check-Out')" class="flex-1 bg-red-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-red-700">Check-Out</button>
+
+                        <!-- Camera Barcode Scanner Toggle & Viewport -->
+                        <div class="pt-2">
+                            <button onclick="toggleScanner()" class="w-full bg-indigo-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-indigo-700 mb-2">📷 Open Camera Barcode Scanner</button>
+                            <div id="scanner-container" class="hidden border rounded-lg p-2 bg-gray-50">
+                                <div id="reader" style="width: 100%;"></div>
+                                <button onclick="closeScanner()" class="mt-2 w-full bg-gray-500 text-white text-xs py-1 rounded">Close Scanner</button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Options -->
+                        <div class="border-t pt-2">
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Manual Attendance Entry</label>
+                            <div class="flex gap-2">
+                                <button onclick="handleGateScan('Check-In')" class="flex-1 bg-green-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-green-700">Manual Check-In</button>
+                                <button onclick="handleGateScan('Check-Out')" class="flex-1 bg-red-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-red-700">Manual Check-Out</button>
+                            </div>
                         </div>
                         <p id="scan-status" class="text-xs text-center text-gray-500 mt-1"></p>
 
@@ -122,7 +138,6 @@
                     <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
                         <h4 class="font-bold text-blue-900 text-sm mb-2">Initiate Renewal / Due Payment</h4>
                         <div class="flex justify-center my-2">
-                            <!-- Sample dynamic UPI QR code generator image -->
                             <img id="upi-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=gymowner@upi&pn=CloudGym&am=500&cu=INR" alt="UPI QR Code" class="border p-1 bg-white rounded shadow-sm">
                         </div>
                         <p class="text-xs text-blue-700 mb-3">Scan via Google Pay, PhonePe, or Paytm to pay directly to Owner Account.</p>
@@ -144,6 +159,7 @@
     <script>
         const API_BASE_URL = "https://chanchalsharma50558.pythonanywhere.com";
         let currentUserData = null;
+        let html5QrCode = null;
 
         async function handleLogin() {
             const phone = document.getElementById('phone-input').value.trim();
@@ -186,8 +202,10 @@
             }
         }
 
-        async function handleGateScan(actionType) {
-            if (!currentUserData) return;
+        async function handleGateScan(actionType, scannedId = null) {
+            const memberIdToScan = scannedId || (currentUserData ? currentUserData.id : null);
+            if (!memberIdToScan) return;
+            
             const statusEl = document.getElementById('scan-status');
             statusEl.innerText = `Processing ${actionType}...`;
             
@@ -195,7 +213,7 @@
                 const response = await fetch(`${API_BASE_URL}/api/scan-gate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ member_id: currentUserData.id, action: actionType })
+                    body: JSON.stringify({ member_id: memberIdToScan, action: actionType })
                 });
                 const data = await response.json();
                 if (response.ok) {
@@ -208,6 +226,42 @@
             } catch (e) {
                 statusEl.innerText = "Gate scanner connection error.";
                 statusEl.className = "text-xs text-center text-red-600 font-bold mt-1";
+            }
+        }
+
+        function toggleScanner() {
+            const container = document.getElementById('scanner-container');
+            container.classList.remove('hidden');
+            
+            if (!html5QrCode) {
+                html5QrCode = new Html5Qrcode("reader");
+            }
+            
+            html5QrCode.start(
+                { facingMode: "environment" }, 
+                { fps: 10, qrbox: { width: 200, height: 200 } },
+                (decodedText) => {
+                    // Barcode scanned successfully
+                    closeScanner();
+                    handleGateScan('Check-In (Scan)', decodedText);
+                },
+                (errorMessage) => {
+                    // scanning in progress...
+                }
+            ).catch(err => {
+                alert("Camera access error: " + err);
+            });
+        }
+
+        function closeScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    document.getElementById('scanner-container').classList.add('hidden');
+                }).catch(err => {
+                    document.getElementById('scanner-container').classList.add('hidden');
+                });
+            } else {
+                document.getElementById('scanner-container').classList.add('hidden');
             }
         }
 
@@ -243,6 +297,7 @@
         }
 
         function handleLogout() {
+            closeScanner();
             currentUserData = null;
             document.getElementById('phone-input').value = '';
             document.getElementById('dashboard-section').classList.add('hidden');
