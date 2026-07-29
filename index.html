@@ -21,7 +21,7 @@
             
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Mobile Number</label>
-                <input type="tel" id="phone-input" placeholder="e.g., 7833056959" 
+                <input type="tel" id="phone-input" placeholder="e.g., +91 9419103873" 
                     class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -161,6 +161,7 @@
 
                 checkMembershipStatus(currentUserData.expiry_date);
                 renderCalendarMockup();
+                checkMemberNotifications(currentUserData.id);
 
                 document.getElementById('login-section').classList.add('hidden');
                 document.getElementById('dashboard-section').classList.remove('hidden');
@@ -168,6 +169,18 @@
                 errorElement.innerText = data.message || "Login failed.";
                 errorElement.classList.remove('hidden');
             }
+        }
+
+        async function checkMemberNotifications(memberId) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/get-notifications/${memberId}`);
+                const data = await res.json();
+                if (res.ok && data.success && data.notifications.length > 0) {
+                    let msg = "⚠️ Owner Alert / Expiry Notice:\n\n";
+                    data.notifications.forEach(n => { msg += `- ${n.message}\n`; });
+                    alert(msg);
+                }
+            } catch (e) { console.error("Notification check error"); }
         }
 
         function checkMembershipStatus(expiryDateStr) {
