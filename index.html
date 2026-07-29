@@ -12,8 +12,9 @@
         💪 Gym Cloud Portal
     </header>
 
-    <main class="flex-grow p-4 max-w-md mx-auto w-full">
-        <div id="login-section" class="bg-white p-6 rounded-xl shadow-md mt-10">
+    <main class="flex-grow p-4 max-w-6xl mx-auto w-full">
+        <!-- Login Section -->
+        <div id="login-section" class="bg-white p-6 rounded-xl shadow-md max-w-md mx-auto mt-10">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Member Login</h2>
             <p class="text-sm text-gray-500 mb-6 text-center">Enter your registered mobile number to access your gym profile.</p>
             
@@ -30,23 +31,109 @@
             <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden"></p>
         </div>
 
-        <div id="dashboard-section" class="bg-white p-6 rounded-xl shadow-md mt-6 hidden">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">Welcome, <span id="member-name"></span>!</h2>
-            <div class="border-t pt-4 space-y-3 text-sm text-gray-600">
-                <p><strong>Membership Type:</strong> <span id="member-plan"></span></p>
-                <p><strong>Expiry Date:</strong> <span id="member-expiry"></span></p>
-                <p><strong>Payment Status:</strong> <span id="member-status" class="text-green-600 font-semibold"></span></p>
+        <!-- Dashboard Layout with Side Panel -->
+        <div id="dashboard-section" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+            
+            <!-- Side Panel (Left Column) -->
+            <div class="space-y-6">
+                <!-- 1. Barcode & Attendance Calendar Box -->
+                <div class="bg-white p-5 rounded-xl shadow-md">
+                    <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">🎫 Gate & Attendance</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">Select Time Slot</label>
+                            <select id="time-slot" class="w-full text-sm border p-2 rounded-lg">
+                                <option>06:00 AM - 09:00 AM</option>
+                                <option>09:00 AM - 12:00 PM</option>
+                                <option>04:00 PM - 07:00 PM</option>
+                                <option>07:00 PM - 10:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="handleGateScan('Check-In')" class="flex-1 bg-green-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-green-700">Check-In</button>
+                            <button onclick="handleGateScan('Check-Out')" class="flex-1 bg-red-600 text-white text-xs font-bold py-2 rounded-lg hover:bg-red-700">Check-Out</button>
+                        </div>
+                        <p id="scan-status" class="text-xs text-center text-gray-500 mt-1"></p>
+
+                        <!-- Calendar Mockup (Green/Red indicator) -->
+                        <div class="mt-4 border-t pt-3">
+                            <span class="text-xs font-bold text-gray-700">Attendance Log (This Week)</span>
+                            <div class="grid grid-cols-7 gap-1 mt-2 text-center text-xs">
+                                <div><span class="block">Mon</span><span class="inline-block w-5 h-5 bg-green-500 text-white rounded-full mt-1 leading-5">✓</span></div>
+                                <div><span class="block">Tue</span><span class="inline-block w-5 h-5 bg-green-500 text-white rounded-full mt-1 leading-5">✓</span></div>
+                                <div><span class="block">Wed</span><span class="inline-block w-5 h-5 bg-red-500 text-white rounded-full mt-1 leading-5">✕</span></div>
+                                <div><span class="block">Thu</span><span class="inline-block w-5 h-5 bg-green-500 text-white rounded-full mt-1 leading-5">✓</span></div>
+                                <div><span class="block">Fri</span><span class="inline-block w-5 h-5 bg-gray-200 text-gray-600 rounded-full mt-1 leading-5">-</span></div>
+                                <div><span class="block">Sat</span><span class="inline-block w-5 h-5 bg-gray-200 text-gray-600 rounded-full mt-1 leading-5">-</span></div>
+                                <div><span class="block">Sun</span><span class="inline-block w-5 h-5 bg-gray-200 text-gray-600 rounded-full mt-1 leading-5">-</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logout Button -->
+                <button onclick="handleLogout()" class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition">
+                    Logout
+                </button>
             </div>
 
-            <div class="mt-6 bg-gray-50 p-4 rounded-lg border">
-                <h3 class="font-bold text-gray-700 mb-1">Your Workout Plan:</h3>
-                <p id="member-workout" class="text-gray-600 text-sm italic"></p>
-            </div>
+            <!-- Main Content Area (Right 2 Columns) -->
+            <div class="md:col-span-2 space-y-6">
+                
+                <!-- Welcome & Profile Overview -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome back, <span id="member-name"></span>!</h2>
+                    <div class="grid grid-cols-2 gap-4 border-t pt-4 text-sm text-gray-600">
+                        <p><strong>Phone:</strong> <span id="member-phone"></span></p>
+                        <p><strong>Member ID:</strong> <span id="member-id"></span></p>
+                    </div>
+                </div>
 
-            <button onclick="handleLogout()" 
-                class="w-full mt-6 bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600 transition">
-                Logout
-            </button>
+                <!-- 2. Exercise & Weekly Record Section -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">🏋️ Workout & Weekly Routine</h3>
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-600 mb-1">Customize / Select Focus Area</label>
+                        <select id="exercise-focus" onchange="updateWorkoutPlan()" class="w-full text-sm border p-2 rounded-lg">
+                            <option value="Legs Day: Squats, Leg Press, Lunges, Calf Raises">Legs Routine</option>
+                            <option value="Back Day: Pull-ups, Lat Pulldowns, Barbell Rows">Back Routine</option>
+                            <option value="Shoulders & Arms: Overhead Press, Lateral Raises, Bicep Curls">Shoulders & Arms Routine</option>
+                            <option value="Chest & Core: Bench Press, Incline Dumbbell, Planks">Chest & Core Routine</option>
+                        </select>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <h4 class="font-semibold text-gray-700 text-sm">Assigned Daily Plan:</h4>
+                        <p id="member-workout" class="text-gray-600 text-sm italic mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- 3. Membership & Payment Page Section -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">💳 Membership & Payment Details</h3>
+                    <div class="grid grid-cols-2 gap-3 text-sm text-gray-600 border-b pb-4 mb-4">
+                        <p><strong>Plan:</strong> <span id="member-plan"></span></p>
+                        <p><strong>Joining Date:</strong> <span id="member-joining">2026-01-01</span></p>
+                        <p><strong>Valid Upto:</strong> <span id="member-expiry"></span></p>
+                        <p><strong>Payment Status:</strong> <span id="member-status" class="text-green-600 font-semibold"></span></p>
+                        <p><strong>Paid Via:</strong> <span id="member-paymode">UPI / Online</span></p>
+                    </div>
+
+                    <!-- UPI QR Code & Payment Initiation -->
+                    <div class="bg-blue-50 border border-blue-200 p-4 rounded-lg text-center">
+                        <h4 class="font-bold text-blue-900 text-sm mb-2">Initiate Renewal / Due Payment</h4>
+                        <div class="flex justify-center my-2">
+                            <!-- Sample dynamic UPI QR code generator image -->
+                            <img id="upi-qr" src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=upi://pay?pa=gymowner@upi&pn=CloudGym&am=500&cu=INR" alt="UPI QR Code" class="border p-1 bg-white rounded shadow-sm">
+                        </div>
+                        <p class="text-xs text-blue-700 mb-3">Scan via Google Pay, PhonePe, or Paytm to pay directly to Owner Account.</p>
+                        <div class="flex justify-center gap-2">
+                            <button onclick="triggerPayment('UPI')" class="bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-blue-700">Pay via UPI QR</button>
+                            <button onclick="triggerPayment('Cash/Card')" class="bg-gray-700 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-gray-800">Record Cash/Card</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </main>
 
@@ -56,6 +143,7 @@
 
     <script>
         const API_BASE_URL = "https://chanchalsharma50558.pythonanywhere.com";
+        let currentUserData = null;
 
         async function handleLogin() {
             const phone = document.getElementById('phone-input').value.trim();
@@ -77,11 +165,14 @@
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    document.getElementById('member-name').innerText = data.member.name;
-                    document.getElementById('member-plan').innerText = data.member.membership_type;
-                    document.getElementById('member-expiry').innerText = data.member.expiry_date;
-                    document.getElementById('member-status').innerText = data.member.payment_status;
-                    document.getElementById('member-workout').innerText = data.member.workout_plan || "No custom plan assigned yet.";
+                    currentUserData = data.member;
+                    document.getElementById('member-name').innerText = currentUserData.name;
+                    document.getElementById('member-phone').innerText = currentUserData.phone;
+                    document.getElementById('member-id').innerText = currentUserData.id;
+                    document.getElementById('member-plan').innerText = currentUserData.membership_type || "Monthly (30 Days)";
+                    document.getElementById('member-expiry').innerText = currentUserData.expiry_date;
+                    document.getElementById('member-status').innerText = currentUserData.payment_status || "Paid";
+                    document.getElementById('member-workout').innerText = currentUserData.workout_plan || "General Routine";
 
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('dashboard-section').classList.remove('hidden');
@@ -95,7 +186,64 @@
             }
         }
 
+        async function handleGateScan(actionType) {
+            if (!currentUserData) return;
+            const statusEl = document.getElementById('scan-status');
+            statusEl.innerText = `Processing ${actionType}...`;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/scan-gate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ member_id: currentUserData.id, action: actionType })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    statusEl.innerText = `Success: ${actionType} recorded!`;
+                    statusEl.className = "text-xs text-center text-green-600 font-bold mt-1";
+                } else {
+                    statusEl.innerText = data.message;
+                    statusEl.className = "text-xs text-center text-red-600 font-bold mt-1";
+                }
+            } catch (e) {
+                statusEl.innerText = "Gate scanner connection error.";
+                statusEl.className = "text-xs text-center text-red-600 font-bold mt-1";
+            }
+        }
+
+        async function updateWorkoutPlan() {
+            if (!currentUserData) return;
+            const newPlan = document.getElementById('exercise-focus').value;
+            document.getElementById('member-workout').innerText = newPlan;
+            
+            await fetch(`${API_BASE_URL}/api/update-workout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ member_id: currentUserData.id, workout_plan: newPlan })
+            });
+        }
+
+        async function triggerPayment(mode) {
+            if (!currentUserData) return;
+            const plan = document.getElementById('member-plan').innerText;
+            
+            const response = await fetch(`${API_BASE_URL}/api/renew-subscription`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ member_id: currentUserData.id, membership_type: plan, payment_mode: mode })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert(`Payment via ${mode} successfully registered! New expiry: ${data.new_expiry}`);
+                document.getElementById('member-expiry').innerText = data.new_expiry;
+                document.getElementById('member-paymode').innerText = mode;
+            } else {
+                alert("Payment registration failed.");
+            }
+        }
+
         function handleLogout() {
+            currentUserData = null;
             document.getElementById('phone-input').value = '';
             document.getElementById('dashboard-section').classList.add('hidden');
             document.getElementById('login-section').classList.remove('hidden');
