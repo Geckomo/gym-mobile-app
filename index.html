@@ -4,27 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gym Member Portal</title>
-    <!-- Tailwind CSS for clean, mobile-friendly design -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
 
-    <!-- Header -->
     <header class="bg-blue-600 text-white p-4 text-center text-xl font-bold shadow-md">
         💪 Gym Cloud Portal
     </header>
 
-    <!-- Main Container -->
     <main class="flex-grow p-4 max-w-md mx-auto w-full">
-        
-        <!-- Login Card -->
         <div id="login-section" class="bg-white p-6 rounded-xl shadow-md mt-10">
             <h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Member Login</h2>
             <p class="text-sm text-gray-500 mb-6 text-center">Enter your registered mobile number to access your gym profile.</p>
             
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Mobile Number</label>
-                <input type="tel" id="phone-input" placeholder="e.g., 9876543210" 
+                <input type="tel" id="phone-input" placeholder="e.g., 7833056959" 
                     class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
@@ -35,7 +30,6 @@
             <p id="login-error" class="text-red-500 text-sm mt-3 text-center hidden"></p>
         </div>
 
-        <!-- Dashboard Card (Hidden until login) -->
         <div id="dashboard-section" class="bg-white p-6 rounded-xl shadow-md mt-6 hidden">
             <h2 class="text-xl font-bold text-gray-800 mb-2">Welcome, <span id="member-name"></span>!</h2>
             <div class="border-t pt-4 space-y-3 text-sm text-gray-600">
@@ -54,17 +48,13 @@
                 Logout
             </button>
         </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="text-center text-xs text-gray-400 p-4">
         Powered by PythonAnywhere & Supabase
     </footer>
 
-    <!-- JavaScript Logic -->
     <script>
-        // Your live backend API URL
         const API_BASE_URL = "https://chanchalsharma50558.pythonanywhere.com";
 
         async function handleLogin() {
@@ -86,15 +76,13 @@
 
                 const data = await response.json();
 
-                if (data.success) {
-                    // Populate Dashboard Data
+                if (response.ok && data.success) {
                     document.getElementById('member-name').innerText = data.member.name;
                     document.getElementById('member-plan').innerText = data.member.membership_type;
                     document.getElementById('member-expiry').innerText = data.member.expiry_date;
                     document.getElementById('member-status').innerText = data.member.payment_status;
                     document.getElementById('member-workout').innerText = data.member.workout_plan || "No custom plan assigned yet.";
 
-                    // Switch views
                     document.getElementById('login-section').classList.add('hidden');
                     document.getElementById('dashboard-section').classList.remove('hidden');
                 } else {
